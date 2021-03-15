@@ -44,7 +44,7 @@ venv\Scripts\activate
 
 Note, you will need to do this *every time* you will be running this the application. If it worked, your command prompt should be prefixed by **(venv)**.
 
-[image.png](https://postimg.cc/0KZPybFn)
+![image.png](https://postimg.cc/0KZPybFn)
 
 If you look through the files you downloaded through the repository, you should see a **requirements.txt** file. This file can be used by Python's package installer, *pip*, in order to install all of the required packages automatically. After you activate the virtual envirnoment, you can run the following command to download all the packages and install them.
 
