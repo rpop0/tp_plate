@@ -1,6 +1,6 @@
 from cv2 import cv2
 import numpy as np
-import imutils
+#import imutils
 
 class Recognizer:
     def __init__(self, path):
@@ -17,4 +17,6 @@ class Recognizer:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.bilateralFilter(img, 13, 15, 15)
         img = cv2.Canny(img, 30, 200)
+        cv2.imshow("Test", img)
+        cv2.waitKey(0)
         
