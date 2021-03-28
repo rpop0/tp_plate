@@ -1,48 +1,64 @@
 from cv2 import cv2
 import numpy as np
 import easyocr
-import imutils
 
 class Recognizer:
     def __init__(self, path):
-        self.path = path
+        #opens image from path
+        self.img = cv2.resize(cv2.imread(path), (640, 480))
 
-    #processes mask from input image
+    #processes mask from input image (DONE)
     def process_image(self):
-        #import image from path
-        img = cv2.imread(self.path)
-        img = cv2.resize(img, (640, 480))
-
-        #-------------- Proces contours --------------
+        img = self.img
 
         #apply filters on image
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img_filter = cv2.bilateralFilter(img_gray, 13, 15, 15)
-        img_edges = cv2.Canny(img_filter, 30, 200)
+        img_edges = cv2.Canny(img_filter, 80, 200)
         
         #test for edge detection
         cv2.imshow("Test", img_edges)
         cv2.waitKey(0)
 
-        #-------------- Mask out plate --------------
-        
+        return img_edges, img_gray
+
+    #processes cntours from image (NEEDS WORK)
+    def process_contours(self, img_edges):
+        img = self.img
+
         #grabs contoursfrom image
-        plate = cv2.findContours(img_edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours = imutils.grab_contours(plate)
+        contours, _ = cv2.findContours(img_edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         #storestop 10 results
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
+        #Show contours test
+        img_contours_show = img.copy()
+        cv2.drawContours(img_contours_show, contours, -2, (0, 255, 0), 3)
+
+        cv2.imshow("Test", img_contours_show)
+        cv2.waitKey(0)
+        #------------------
+
+        return contours
+
+    #selects the licence plate prom contours result (DONE)
+    def select_plate(self, contours):
         #plate location
         loc = None
 
         #iterate results to find a best fit for a plate
         for cnt in contours:
-            aprox = cv2.approxPolyDP(cnt, 10, True)
+            peri = cv2.arcLength(cnt, True)
+            aprox = cv2.approxPolyDP(cnt, 0.018 * peri, True)
             #breaks if plate is found
             if len(aprox) == 4:
                 loc = aprox
                 break
         
+        return loc
+
+    #masks out the plate ang crops the image (DONE)
+    def mask_plate(self, loc, img_gray):
         #creates new mask for the number plate
         new_mask = np.zeros(img_gray.shape, np.uint8)
         img_masked = cv2.drawContours(new_mask, [loc], 0, 255, -1)
@@ -55,20 +71,18 @@ class Recognizer:
 
         #cuts the image to show only the maskedpart
         (x, y) = np.where(new_mask == 255)
-        img_cut = img_masked[np.min(x):np.max(x) + 1, np.min(y):np.max(y) + 1]
+        img_cut = img_gray[np.min(x):np.max(x) + 1, np.min(y):np.max(y) + 1]
 
         #test for plate mask cut
         cv2.imshow("Test", img_cut)
         cv2.waitKey(0)
 
         #returns processed image and number location
-        return img_cut, loc
+        return img_cut
 
-    #extracts number from masked image
+    #extracts number from masked image (DECENT / CAN IMPROVE)
     def process_number(self, img_cut, loc):
-        #import image from path
-        img = cv2.imread(self.path)
-        img = cv2.resize(img, (640, 480))
+        img = self.img
         
         #uses easyocr to read plate (language = ro)
         read = easyocr.Reader(['ro'])
@@ -86,4 +100,6 @@ class Recognizer:
 
         #Show final image
         cv2.imshow("Test", img_result)
-        cv2.waitKey(0)
+        cv2.waitKey(0)  
+
+    
