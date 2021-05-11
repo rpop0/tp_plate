@@ -1,7 +1,7 @@
-from classes.Recognizer import Recognizer
+from classes.Recognizer2 import Recognizer2
 
 def main():
-    rec = Recognizer("media/1.jpg")
+    rec = Recognizer2("media/1.jpg")
 
     #usess functions from rec to get necesary input
     img_edges, img_gray = rec.process_image()
