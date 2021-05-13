@@ -14,13 +14,12 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
-#NON YOLO
-from process import ocr_images
+# NON YOLO
+from ocr import ocr_image
 import threading
 
 
 def detect(save_img=False):
-    save_counter = 5
     source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
@@ -65,6 +64,12 @@ def detect(save_img=False):
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
     t0 = time.time()
+
+    save_counter = 5
+    first_discard_counter = 60
+    frames_with_no_detection = 0
+    detection_number = 1
+
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -106,8 +111,8 @@ def detect(save_img=False):
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
                 # Write results
+
                 for *xyxy, conf, cls in reversed(det):
-                    img_list = list()
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
@@ -117,13 +122,25 @@ def detect(save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = f'{names[int(cls)]} {conf:.2f}'
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
-                        crop = im0[int(xyxy[1]):int(xyxy[3]), int(xyxy[0]):int(xyxy[2])]
-                        cv2.imwrite(f"{save_path}.jpg", crop)
-                        ocr_images(crop)
-                        time.sleep(5)
+                        if first_discard_counter <= 0:
+                            crop = im0[int(xyxy[1]):int(xyxy[3]), int(xyxy[0]):int(xyxy[2])]
+                            if save_counter != 0:
+                                #Path [:-9] to cut video.mp4 from the path.
+                                path = f"{save_path[:-9]}{detection_number}{save_counter}.jpg"
+                                cv2.imwrite(path, crop)
+                                ocr_image(path)
+                                save_counter -= 1
+                        first_discard_counter -= 1
+            else:
+                frames_with_no_detection += 1
+                if frames_with_no_detection == 10:
+                    first_discard_counter = 60
+                    frames_with_no_detection = 0
+                    if save_counter == 0:
+                        detection_number += 1
+                    save_counter = 5
 
-
-                        # boundaries = xyxy
+                    # boundaries = xyxy
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
 
@@ -151,7 +168,6 @@ def detect(save_img=False):
                             save_path += '.mp4'
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer.write(im0)
-
 
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
