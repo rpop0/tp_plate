@@ -17,6 +17,7 @@ In order to start working on this project, you need the following things:
 * opencv-python 4.5.1.48 Python Package
 * pytesseract 0.3.7
 * tesseract-ocr binaries
+* YOLOv5 and all related libraries. [URL](https://github.com/ultralytics/yolov5)
 
 ### Setting up the project
 
@@ -61,7 +62,7 @@ And that is it! You should have all the required packages installed in the envir
 In order for this program to work, you have to have the binaries of tesseract-ocr on your computer.
 
 **Windows**
-You can download the binaries for Windows [here](https://tesseract-ocr.github.io/tessdoc/Downloads.html]
+You can download the binaries for Windows [here](https://tesseract-ocr.github.io/tessdoc/Downloads.html)
 
 **Mac OS / Linux**
 Tesseract is available on most linux distributions under the **tesseract-ocr** package name.
