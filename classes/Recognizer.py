@@ -29,7 +29,7 @@ class Recognizer:
         #grabs contoursfrom image
         contours, _ = cv2.findContours(img_edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         #storestop 10 results
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[0:100]
 
         #Show contours test
         img_contours_show = img.copy()
@@ -49,7 +49,7 @@ class Recognizer:
         #iterate results to find a best fit for a plate
         for cnt in contours:
             peri = cv2.arcLength(cnt, True)
-            aprox = cv2.approxPolyDP(cnt, 0.018 * peri, True)
+            aprox = cv2.approxPolyDP(cnt, 0.018 * peri, True) #0.018
             #breaks if plate is found
             if len(aprox) == 4:
                 loc = aprox

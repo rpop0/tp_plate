@@ -15,6 +15,9 @@ In order to start working on this project, you need the following things:
 * pip
 * "virtualenv" Python Package
 * opencv-python 4.5.1.48 Python Package
+* pytesseract 0.3.7
+* tesseract-ocr binaries
+* YOLOv5 and all related libraries. [URL](https://github.com/ultralytics/yolov5)
 
 ### Setting up the project
 
@@ -53,3 +56,25 @@ python3 -m pip install -r requirements.txt
 ```
 
 And that is it! You should have all the required packages installed in the envirnoment in order to develop and run this program.
+
+### Installing tesseract-ocr
+
+In order for this program to work, you have to have the binaries of tesseract-ocr on your computer.
+
+**Windows**
+You can download the binaries for Windows [here](https://tesseract-ocr.github.io/tessdoc/Downloads.html)
+
+**Mac OS / Linux**
+Tesseract is available on most linux distributions under the **tesseract-ocr** package name.
+
+
+## Running the program.
+
+In order to run the program, you need to actiavate your virtual envirnoment as mentioned above and then you run the following command.
+```
+python detect.py --source ../tp_plate/media/video.mp4 --weights 600.pt --conf 0.25
+```
+
+This will then run through the video or stream and save 5 shots of each plate seen in the **./runs/detect/** folder. The program will then process each image and run Optical Character Recognition through Tesseract.
+
+
