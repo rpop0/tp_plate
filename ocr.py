@@ -134,8 +134,9 @@ def extract_plate_text(img):
     if len(text) < 6:
         print("\n\nERROR plate : ", text, "\n\n")
     else:
-        text = process_plate_text(text)
         print("\n\nPlate Detected : ", text, "\n\n")
+        text = process_plate_text(text)
+        print("\n\nPlate Detected Adjustment : ", text, "\n\n")
 
 def ocr_image(path):
     img = cv2.imread(path)
